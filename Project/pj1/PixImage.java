@@ -21,9 +21,9 @@ public class PixImage {
    *  Define any variables associated with a PixImage object here.  These
    *  variables MUST be private.
    */
-
-
-
+    private int[][][] grid;
+    private int gWidth;
+    private int gHeight;
 
   /**
    * PixImage() constructs an empty PixImage with a specified width and height.
@@ -33,7 +33,9 @@ public class PixImage {
    * @param height the height of the image.
    */
   public PixImage(int width, int height) {
-    // Your solution here.
+    this.grid = new int[width][height][3];
+    this.gWidth=width;
+    this.gHeight=height;
   }
 
   /**
@@ -43,7 +45,7 @@ public class PixImage {
    */
   public int getWidth() {
     // Replace the following line with your solution.
-    return 1;
+    return this.gWidth;
   }
 
   /**
@@ -53,7 +55,7 @@ public class PixImage {
    */
   public int getHeight() {
     // Replace the following line with your solution.
-    return 1;
+    return this.gHeight;
   }
 
   /**
@@ -65,7 +67,7 @@ public class PixImage {
    */
   public short getRed(int x, int y) {
     // Replace the following line with your solution.
-    return 0;
+    return this.grid[x][y][0];
   }
 
   /**
@@ -77,7 +79,7 @@ public class PixImage {
    */
   public short getGreen(int x, int y) {
     // Replace the following line with your solution.
-    return 0;
+    return this.grid[x][y][1];
   }
 
   /**
@@ -89,7 +91,7 @@ public class PixImage {
    */
   public short getBlue(int x, int y) {
     // Replace the following line with your solution.
-    return 0;
+    return this.grid[x][y][2];
   }
 
   /**
@@ -107,6 +109,9 @@ public class PixImage {
    */
   public void setPixel(int x, int y, short red, short green, short blue) {
     // Your solution here.
+    this.grid[x][y][0]=red;
+    this.grid[x][y][1]=green;
+    this.grid[x][y][2]=blue;
   }
 
   /**
@@ -120,7 +125,8 @@ public class PixImage {
    */
   public String toString() {
     // Replace the following line with your solution.
-    return "";
+    return "This image has the width: "+this.gWidth+
+      ", the height: "+this.gHeight;
   }
 
   /**
