@@ -33,9 +33,9 @@ public class PixImage {
    * @param height the height of the image.
    */
   public PixImage(int width, int height) {
-    this.grid = new int[width][height][3];
-    this.gWidth=width;
-    this.gHeight=height;
+    grid = new int[width][height][3];
+    gWidth=width;
+    gHeight=height;
   }
 
   /**
@@ -45,7 +45,7 @@ public class PixImage {
    */
   public int getWidth() {
     // Replace the following line with your solution.
-    return this.gWidth;
+    return gWidth;
   }
 
   /**
@@ -55,7 +55,7 @@ public class PixImage {
    */
   public int getHeight() {
     // Replace the following line with your solution.
-    return this.gHeight;
+    return gHeight;
   }
 
   /**
@@ -67,7 +67,7 @@ public class PixImage {
    */
   public short getRed(int x, int y) {
     // Replace the following line with your solution.
-    return this.grid[x][y][0];
+    return (short)grid[x][y][0];
   }
 
   /**
@@ -79,7 +79,7 @@ public class PixImage {
    */
   public short getGreen(int x, int y) {
     // Replace the following line with your solution.
-    return this.grid[x][y][1];
+    return (short)grid[x][y][1];
   }
 
   /**
@@ -91,7 +91,7 @@ public class PixImage {
    */
   public short getBlue(int x, int y) {
     // Replace the following line with your solution.
-    return this.grid[x][y][2];
+    return (short)grid[x][y][2];
   }
 
   /**
@@ -109,9 +109,9 @@ public class PixImage {
    */
   public void setPixel(int x, int y, short red, short green, short blue) {
     // Your solution here.
-    this.grid[x][y][0]=red;
-    this.grid[x][y][1]=green;
-    this.grid[x][y][2]=blue;
+    grid[x][y][0]=red;
+    grid[x][y][1]=green;
+    grid[x][y][2]=blue;
   }
 
   /**
@@ -125,8 +125,18 @@ public class PixImage {
    */
   public String toString() {
     // Replace the following line with your solution.
-    return "This image has the width: "+this.gWidth+
-      ", the height: "+this.gHeight;
+    String astring = "{\r\n";
+    for(int i=0;i<this.getWidth();i++){
+      astring += "{";
+      for(int j=0;j<this.getHeight();j++){
+        astring+="("+this.getRed(i,j)+", "+this.getGreen(i,j)+", "
+            +this.getBlue(i,j)+")";
+      }
+      astring += "}\r\n";
+    }
+    astring += "}\r\n";
+
+    return astring;
   }
 
   /**
@@ -160,8 +170,60 @@ public class PixImage {
    */
   public PixImage boxBlur(int numIterations) {
     // Replace the following line with your solution.
-    return this;
+    if(numIterations<=0) return this;
+
+    PixImage cur = this;
+    PixImage blurImage = new PixImage(getWidth(),getHeight());
+
+    for(int i=0;i<getWidth();i++){
+      for(int j=0;j<getHeight();j++){
+        //System.out.println(cur.avgSurround(i,j)[0]);
+        blurImage.setPixel(i,j,(short)cur.avgSurround(i,j)[0],(short)cur.avgSurround(i,j)[1],
+                                (short)cur.avgSurround(i,j)[2]);
+      }
+    }
+
+    return blurImage.boxBlur(numIterations-1);
   }
+
+  /**
+  * avgSurround()
+  * calculate the average of red, green, blue from all surrounding pixels,
+  * and store them in one array
+  *
+  * @param the location of the pixel x and y, the PixImage 
+  * @return the average of red, green, blue surround by that (x,y) location in one array
+  */
+  public int[] avgSurround(int w, int h){
+    int[] sum=new int[3];
+    int count=0;
+    for(int i=w-1;i<=w+1;i++){
+      for(int j=h-1;j<=h+1;j++){
+        if(isInside(i,j)){
+          sum[0]+=this.getRed(i,j);
+          sum[1]+=this.getGreen(i,j);
+          sum[2]+=this.getBlue(i,j);
+          count++;
+        }
+      }
+    }// end out for loop
+
+    int[] avg={sum[0]/count,sum[1]/count,sum[2]/count};
+    return avg;
+  }
+
+
+  /**
+  * isInside()
+  * return if the given location is inside of current PixImage
+  *
+  *@param the location of the pixel
+  *@return if the pixel is inside of the PixImage
+  */
+  public boolean isInside(int x, int y){
+    return x>=0 && y>=0 && x<this.getWidth() && y<this.getHeight();
+  }
+
 
   /**
    * mag2gray() maps an energy (squared vector magnitude) in the range
@@ -205,9 +267,48 @@ public class PixImage {
    */
   public PixImage sobelEdges() {
     // Replace the following line with your solution.
-    return this;
+    PixImage curr = new PixImage(gWidth, gHeight);
+    for (int i = 0; i < curr.getWidth(); i++) {
+      for (int j = 0; j < curr.getHeight(); j++){
+        short rgb = this.sobel(i, j);
+        curr.setPixel(i, j, rgb, rgb, rgb);
+      }
+    }
+    return curr;
     // Don't forget to use the method mag2gray() above to convert energies to
     // pixel intensities.
+  }
+
+  public short sobel(int x, int y) {
+    int rx=0, ry=0, gx=0, gy=0, bx=0, by=0;
+    int a, b;
+    int sobX[][] = {{1, 0, -1}, {2, 0, -2}, {1, 0, -1}};
+    int sobY[][] = {{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
+
+    for (int i = -1; i <= 1; i++) {
+      for (int j = -1; j<= 1; j++) {
+        if (isInside(x+i, y+j)) {
+          a = x+i;
+          b = y+j;
+        } else {
+          a = edges(x+i, gWidth);
+          b = edges(y+j, gHeight);
+        }
+        rx += getRed(a, b) * sobX[i+1][j+1];
+        ry += getRed(a, b) * sobY[i+1][j+1];
+        gx += getGreen(a, b) * sobX[i+1][j+1];
+        gy += getGreen(a, b) * sobY[i+1][j+1];
+        bx += getBlue(a, b) * sobX[i+1][j+1];
+        by += getBlue(a, b) * sobY[i+1][j+1];
+        }
+      }
+    int energy = rx*rx + ry*ry + gx*gx + gy*gy + bx*bx + by*by;
+    short toGray = mag2gray(energy);
+    return toGray;
+  }
+
+  public int edges(int x, int y) {
+    return x<0? 0 : x>=y? y-1 : x;
   }
 
 
@@ -343,5 +444,7 @@ public class PixImage {
            array2PixImage(new int[][] { { 122, 143, 74 },
                                         { 74, 143, 122 } })),
            "Incorrect Sobel:\n" + image2.sobelEdges());
+    //System.out.println("======");
+    //System.out.println(image1.avgSurround(0,0)[0]);
   }
 }
